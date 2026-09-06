@@ -1,0 +1,1153 @@
+<title>Typographic Score</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#ffffff;
+    --panel:#ffffff;
+    --ink:#1a1a1a;
+    --ink-soft:#6b6b66;
+    --line:#d8d5cd;
+    --accent:#e91e8c;
+    --accent-soft:#f9d3e8;
+    --glyph:#1a1a1a;
+    --glyph-active:#e91e8c;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#17161a;
+      --panel:#221f26;
+      --ink:#eeece8;
+      --ink-soft:#948f98;
+      --line:#39353f;
+      --accent:#ff4fa8;
+      --accent-soft:#3a1f30;
+      --glyph:#eeece8;
+      --glyph-active:#ff4fa8;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#17161a;
+    --panel:#221f26;
+    --ink:#eeece8;
+    --ink-soft:#948f98;
+    --line:#39353f;
+    --accent:#ff4fa8;
+    --accent-soft:#3a1f30;
+    --glyph:#eeece8;
+    --glyph-active:#ff4fa8;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Space Grotesk',-apple-system,BlinkMacSystemFont,"Pretendard","Apple SD Gothic Neo",sans-serif;
+  }
+  .wrap{
+    max-width:720px;
+    margin:0 auto;
+    padding:28px 20px 60px;
+  }
+  header{
+    margin-bottom:16px;
+  }
+  h1{
+    font-family:'Space Grotesk',-apple-system,BlinkMacSystemFont,sans-serif;
+    font-style:normal;
+    font-weight:600;
+    font-size:19px;
+    letter-spacing:0.01em;
+    margin:0 0 6px;
+  }
+  p.sub{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin:0;
+    line-height:1.6;
+  }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    margin-top:12px;
+    overflow:hidden;
+  }
+  .panel-label{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding:10px 14px 0;
+    font-size:10.5px;
+    letter-spacing:0.06em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    gap:10px;
+  }
+  .panel-label span:last-child{ text-transform:none; letter-spacing:0; white-space:nowrap; }
+  canvas{
+    display:block;
+    width:100%;
+    touch-action:none;
+  }
+  #formCanvas{ height:140px; cursor:default; }
+  #glyphCanvas{ height:280px; cursor:grab; }
+  #glyphCanvas:active{ cursor:grabbing; }
+  #pitchCanvas{ height:120px; cursor:default; }
+
+  .pitch-panel{ background:var(--accent-soft); }
+
+  .controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:14px;
+  }
+  button{
+    font:inherit;
+    font-size:12px;
+    font-weight:500;
+    color:var(--ink);
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:8px 13px;
+    cursor:pointer;
+  }
+  button:hover{ border-color:var(--ink-soft); }
+  button.primary{
+    background:var(--ink);
+    color:var(--bg);
+    border-color:var(--ink);
+  }
+  button:disabled{ opacity:0.4; cursor:default; }
+  button[hidden]{ display:none; }
+
+  .footnote{
+    margin-top:16px;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    line-height:1.6;
+  }
+  .footnote b{ color:var(--ink); font-weight:600; }
+
+  .archive-list{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding:12px 14px 14px;
+  }
+  .archive-card{ flex:0 0 auto; width:92px; }
+  .archive-thumb{
+    width:92px; height:64px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:var(--bg);
+    color:var(--ink);
+    cursor:pointer;
+    overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .archive-thumb:hover{ border-color:var(--accent); }
+  .archive-meta{
+    margin-top:4px;
+    font-size:9.5px;
+    color:var(--ink-soft);
+    display:flex;
+    justify-content:space-between;
+    gap:4px;
+  }
+  .archive-meta button{
+    font-size:9.5px;
+    padding:0;
+    border:none;
+    background:none;
+    color:var(--ink-soft);
+    text-decoration:underline;
+    cursor:pointer;
+  }
+  .archive-empty{
+    padding:14px;
+    font-size:11.5px;
+    color:var(--ink-soft);
+  }
+
+  .log-list{
+    max-height:132px;
+    overflow-y:auto;
+    margin-top:2px;
+  }
+  .log-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:5px 14px;
+    border-top:1px solid var(--line);
+    color:var(--ink-soft);
+    font-size:11px;
+  }
+  .log-row:first-child{ border-top:none; }
+  .log-row.latest{ color:var(--ink); background:var(--accent-soft); }
+  .log-idx{ width:22px; text-align:right; font-variant-numeric:tabular-nums; }
+  .log-char{ font-family:'Space Grotesk',sans-serif; font-size:15px; width:18px; text-align:center; }
+  .log-note{ font-variant-numeric:tabular-nums; width:32px; }
+  .log-vowel{ width:16px; }
+  .log-tension{ margin-left:auto; font-variant-numeric:tabular-nums; }
+  .log-empty{ padding:14px; font-size:11.5px; color:var(--ink-soft); }
+
+  #startOverlay{
+    position:fixed; inset:0;
+    background:var(--bg);
+    display:flex; align-items:center; justify-content:center;
+    z-index:20;
+  }
+  #startOverlay button{
+    padding:12px 22px;
+    font-size:13px;
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Typographic Score</h1>
+    <p class="sub">Every mark is a note. Lighter diacritics (top) sound higher, heavier punctuation (bottom) sounds lower. Tap for a short sound, or press and pull to add tension — how far you pull drives volume, vibrato, resonance, and pitch together.</p>
+  </header>
+
+  <div class="panel">
+    <div class="panel-label"><span>Forming Line · trace</span><span id="noteCount">0 notes</span></div>
+    <canvas id="formCanvas"></canvas>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label"><span>Glyph Board · press &amp; pull</span><span id="lastNote">Press and pull</span></div>
+    <canvas id="glyphCanvas"></canvas>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label"><span>Performance Log · log</span><span id="logCount">0</span></div>
+    <div class="log-list" id="logList"></div>
+  </div>
+
+  <div class="panel pitch-panel">
+    <div class="panel-label" style="color:var(--accent)"><span>Pitch – Time · pitch / time</span><span>width = tension</span></div>
+    <canvas id="pitchCanvas"></canvas>
+  </div>
+
+  <div class="controls">
+    <button id="autoBtn">Auto Play</button>
+    <button id="shuffleBtn">Shuffle Board</button>
+    <button id="clearBtn">Clear Line</button>
+    <button class="primary" id="saveBtn" hidden>Save</button>
+    <button id="exportBtn" hidden>Export (JSON)</button>
+  </div>
+
+  <div class="panel" id="archivePanel" hidden>
+    <div class="panel-label"><span>Archive · saved traces</span><span id="archiveCount">0</span></div>
+    <div class="archive-list" id="archiveList"></div>
+  </div>
+
+  <p class="footnote">
+    The board has <b>15 fixed typographic marks</b> (˘ˇ¯˜¨ · ´`°˙′ · …—¶§‡, from light diacritics at top to heavy punctuation at bottom). Vertical position sets the pitch, horizontal position sets the vowel (a·e·i·o·u). The sound isn't a sample — it's an oscillator passed through the formant bands (F1·F2·F3) of each vowel, and the <b>tension</b> from pressing and pulling raises volume, vibrato, resonance, and pitch together. Click "Save" to keep the line you've drawn in the archive — it stays there as a thumbnail next time you open this page. Click a thumbnail to preview it, or press any glyph to return to your current session.
+  </p>
+</div>
+
+<div id="startOverlay">
+  <button class="primary" id="startBtn">Enable Sound &amp; Start</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  // ===================================================================
+  // Suggested reading order for this file (if you want the full picture):
+  //
+  //   1. buildGlyphs()           — the rule that turns glyph coordinates into note/vowel
+  //   2. drawGlyphBoard/drawForm/drawPitch — the "draw the state" pattern
+  //      (the same idea as draw() in mini-score-starter.html — except instead
+  //       of p5.js calling draw() automatically every frame, here refreshAll()
+  //       is called by hand whenever the state changes.)
+  //   3. createLiveVoice()       — building sound from oscillator + filters + envelope
+  //   4. the three pointerdown/move/up addEventListeners — the press-and-pull interaction
+  //   5. the db/downloads section at the bottom — a save feature that only works
+  //      in the Claude environment. When self-hosted this section quietly does
+  //      nothing (no errors) — you can delete the whole block if you don't need
+  //      it and everything else still works.
+  //
+  // The whole structure follows one rule:
+  //   store "what happened" in state (variables),
+  //   and redraw "what's on screen" every time by reading that state.
+  // Event handlers never draw on the canvas directly — they only change state
+  // and call refreshAll() — for this same reason.
+  // ===================================================================
+
+  // ---------- state ----------
+  var glyphs = [];        // {id, x, y, char, note, vowelKey}
+  var history = [];       // {x, y, note, vowelKey, char, tension, t} — live recording
+  var activeDrags = {};   // pointerId -> {glyph, voice, startX, startY, maxTension}
+  var dragVisual = {};    // glyphId -> {x,y} live displayed position while dragging
+  var autoTimer = null;
+  var BOARD_MARGIN = 46;
+  var archiveViewData = null; // {id, points:[{xn,yn,note,vowelKey,tension,char}]} when browsing archive
+
+  var formCanvas = document.getElementById('formCanvas');
+  var glyphCanvas = document.getElementById('glyphCanvas');
+  var pitchCanvas = document.getElementById('pitchCanvas');
+  var noteCountEl = document.getElementById('noteCount');
+  var lastNoteEl = document.getElementById('lastNote');
+  var archivePanel = document.getElementById('archivePanel');
+  var archiveListEl = document.getElementById('archiveList');
+  var archiveCountEl = document.getElementById('archiveCount');
+  var saveBtn = document.getElementById('saveBtn');
+  var exportBtn = document.getElementById('exportBtn');
+  var logListEl = document.getElementById('logList');
+  var logCountEl = document.getElementById('logCount');
+
+  // pentatonic scale across ~2.5 octaves, low->high
+  var SCALE = ['C3','D3','E3','G3','A3','C4','D4','E4','G4','A4','C5','D5','E5','G5'];
+
+  // vowel formant table (approx F1/F2/F3 in Hz, relative amplitudes) — x-position selects one
+  var VOWEL_ORDER = ['a','e','i','o','u'];
+  var VOWELS = {
+    a: { label:'a', f:[700,1220,2600], amp:[1,0.55,0.25] },
+    e: { label:'e', f:[530,1840,2480], amp:[1,0.5,0.2] },
+    i: { label:'i', f:[270,2290,3010], amp:[1,0.35,0.2] },
+    o: { label:'o', f:[570,840,2410], amp:[1,0.6,0.15] },
+    u: { label:'u', f:[300,870,2240], amp:[1,0.5,0.15] }
+  };
+
+  // fixed 5x3 board of typographic marks — light diacritics (top / high pitch)
+  // down to heavy punctuation (bottom / low pitch). positions are normalized 0..1.
+  var COLS = [0.1, 0.3, 0.5, 0.7, 0.9];
+  var ROWS = [0.18, 0.5, 0.82];
+  var CHAR_ROWS = [
+    ['˘','ˇ','¯','˜','¨'],
+    ['´','`','°','˙','′'],
+    ['…','—','¶','§','‡']
+  ];
+
+  function buildBoardSpec(){
+    var spec = [];
+    CHAR_ROWS.forEach(function(row, r){
+      row.forEach(function(ch, c){
+        spec.push({ char: ch, xn: COLS[c], yn: ROWS[r] });
+      });
+    });
+    return spec;
+  }
+  var BOARD_SPEC = buildBoardSpec(); // fixed order: reproducible identity unless shuffled
+
+  function cssVar(name){
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  // small vocabulary of marker shapes, one per vowel — echoes a reference score
+  // where each piece type reads as a distinct icon along the traced line.
+  function drawMarker(ctx, x, y, r, key, color, alpha){
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.3;
+    ctx.beginPath();
+    if(key === 'a'){
+      ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    } else if(key === 'e'){
+      ctx.arc(x,y,r,Math.PI,0,false); ctx.closePath(); ctx.fill();
+    } else if(key === 'i'){
+      ctx.moveTo(x, y-r); ctx.lineTo(x+r*0.9, y+r*0.75); ctx.lineTo(x-r*0.9, y+r*0.75); ctx.closePath(); ctx.fill();
+    } else if(key === 'o'){
+      ctx.moveTo(x, y-r); ctx.lineTo(x+r, y); ctx.lineTo(x, y+r); ctx.lineTo(x-r, y); ctx.closePath(); ctx.stroke();
+    } else {
+      ctx.arc(x,y,r,0,Math.PI*2); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // ---------- canvas dpi setup ----------
+  // A canvas's "CSS size" (how big it looks) and its "actual pixel count" can differ.
+  // On a high-density screen like Retina (devicePixelRatio > 1), leaving them equal
+  // makes everything look blurry, so we make the actual pixel count dpr times bigger
+  // and then use ctx.setTransform to bring it back so "1 CSS px = 1 drawing unit."
+  // That way the drawing functions below never need to think about dpr — they just
+  // use coordinates based on w,h (the CSS size).
+  function fitCanvas(cv){
+    var rect = cv.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    cv.width = Math.max(1, Math.round(rect.width * dpr));
+    cv.height = Math.max(1, Math.round(rect.height * dpr));
+    var ctx = cv.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    return {ctx: ctx, w: rect.width, h: rect.height};
+  }
+
+  // ---------- build the glyph board (position -> pitch/vowel, char per position) ----------
+  // This function is essentially where the "instrument" gets designed. It does two things:
+  //  1) converts BOARD_SPEC (normalized 0–1 coordinates) into the canvas's actual pixel size
+  //  2) maps each coordinate's vertical rank to an index into the SCALE array,
+  //     and its horizontal position to an index into VOWEL_ORDER
+  // The rule "higher = higher pitch, further left = 'a'" ends up expressed in code
+  // as this very simple "coordinate → array index" calculation.
+  function buildGlyphs(charOrder){
+    var rect = glyphCanvas.getBoundingClientRect();
+    var w = rect.width || 680, h = rect.height || 280;
+    var margin = BOARD_MARGIN;
+
+    var raw = BOARD_SPEC.map(function(slot){
+      return { x: margin + slot.xn*(w-margin*2), y: margin + slot.yn*(h-margin*2) };
+    });
+
+    var n = raw.length;
+    var order = raw.map(function(_,i){ return i; });
+    order.sort(function(a,b){ return raw[a].y - raw[b].y; });
+    var lo = 1, hi = SCALE.length-1;
+
+    var out = [];
+    for(var k=0;k<n;k++){
+      var rank = order.indexOf(k);
+      var scaleIdx = Math.round(hi - (rank/Math.max(1,(n-1)))*(hi-lo));
+      scaleIdx = Math.max(0, Math.min(SCALE.length-1, scaleIdx));
+      var xNorm = Math.max(0, Math.min(0.999, (raw[k].x - margin) / (w - margin*2)));
+      var vIdx = Math.max(0, Math.min(VOWEL_ORDER.length-1, Math.floor(xNorm * VOWEL_ORDER.length)));
+      out.push({
+        id:k, x:raw[k].x, y:raw[k].y,
+        char: charOrder[k],
+        note: SCALE[scaleIdx],
+        vowelKey: VOWEL_ORDER[vIdx]
+      });
+    }
+    return out;
+  }
+
+  function loadBoard(charOrder){
+    stopAuto();
+    releaseAllVoices();
+    archiveViewData = null;
+    glyphs = buildGlyphs(charOrder);
+    history = [];
+    lastNoteEl.textContent = 'Press and pull';
+    refreshAll();
+  }
+
+  function shuffleBoard(){
+    var order = BOARD_SPEC.map(function(s){ return s.char; });
+    for(var i=order.length-1;i>0;i--){
+      var r = Math.floor(Math.random()*(i+1));
+      var tmp = order[i]; order[i]=order[r]; order[r]=tmp;
+    }
+    loadBoard(order);
+  }
+
+  // ---------- drawing: glyph board ----------
+  // drawGlyphBoard/drawForm/drawPitch all follow the same pattern:
+  // 1) clear the canvas with clearRect, 2) read the current state (glyphs/history/
+  // dragVisual, etc.), then 3) redraw everything from scratch. Redrawing the whole
+  // thing every time — rather than "updating just one part" — is the standard way
+  // to program a canvas (the same idea as draw() in mini-score-starter.html).
+  function posOf(g){
+    return dragVisual[g.id] || {x:g.x, y:g.y};
+  }
+
+  function drawGlyphBoard(){
+    var f = fitCanvas(glyphCanvas);
+    var ctx = f.ctx, w = f.w, h = f.h;
+    ctx.clearRect(0,0,w,h);
+
+    var glyphCol = cssVar('--glyph');
+    var activeCol = cssVar('--glyph-active');
+    var softCol = cssVar('--ink-soft');
+    var inkCol = cssVar('--ink');
+
+    // faint dot grid — a quiet structural field behind the marks, like a ruled board
+    ctx.save();
+    ctx.fillStyle = softCol;
+    ctx.globalAlpha = 0.14;
+    for(var gx = 10; gx < w; gx += 22){
+      for(var gy = 10; gy < h; gy += 22){
+        ctx.beginPath();
+        ctx.arc(gx, gy, 0.8, 0, Math.PI*2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+
+    // vowel zones — 5 bands across width, x-position picks the vowel
+    var bandW = (w - BOARD_MARGIN*2) / VOWEL_ORDER.length;
+    ctx.save();
+    ctx.font = '10px "Space Grotesk",-apple-system,sans-serif';
+    ctx.textAlign = 'center';
+    VOWEL_ORDER.forEach(function(vk, idx){
+      var bx = BOARD_MARGIN + bandW*idx;
+      if(idx % 2 === 1){
+        ctx.fillStyle = inkCol;
+        ctx.globalAlpha = 0.04;
+        ctx.fillRect(bx, 0, bandW, h);
+      }
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = softCol;
+      ctx.fillText(VOWELS[vk].label, bx + bandW/2, h - 6);
+      ctx.globalAlpha = 1;
+    });
+    ctx.restore();
+
+    glyphs.forEach(function(g){
+      var pos = posOf(g);
+      var active = !!dragVisual[g.id];
+
+      if(active){
+        ctx.beginPath();
+        ctx.moveTo(g.x, g.y);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.strokeStyle = activeCol;
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 0.35;
+        ctx.setLineDash([2,3]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 1;
+
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 20, 0, Math.PI*2);
+        ctx.strokeStyle = activeCol;
+        ctx.lineWidth = 1.1;
+        ctx.globalAlpha = 0.4;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.font = (active ? '600 38px' : '500 30px') + ' "Space Grotesk", -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = active ? activeCol : glyphCol;
+      ctx.fillText(g.char, pos.x, pos.y);
+    });
+  }
+
+  // ---------- effective points (live history, or a loaded archive preview) ----------
+  function currentPoints(){
+    if(archiveViewData){
+      var rect = glyphCanvas.getBoundingClientRect();
+      var w = rect.width || 680, h = rect.height || 280, margin = BOARD_MARGIN;
+      return archiveViewData.points.map(function(p){
+        return {
+          x: margin + p.xn*(w-margin*2), y: margin + p.yn*(h-margin*2),
+          note:p.note, vowelKey:p.vowelKey, tension:p.tension||0, char:p.char||''
+        };
+      });
+    }
+    return history;
+  }
+
+  function exitArchiveView(){
+    archiveViewData = null;
+  }
+
+  // ---------- drawing: top trace (spatial path through the board, in play order) ----------
+  function drawForm(){
+    var f = fitCanvas(formCanvas);
+    var ctx = f.ctx, w = f.w, h = f.h;
+    ctx.clearRect(0,0,w,h);
+    var pts0 = currentPoints();
+    if(pts0.length === 0){
+      ctx.font = '11px "Space Grotesk",-apple-system,sans-serif';
+      ctx.fillStyle = cssVar('--ink-soft');
+      ctx.textAlign = 'center';
+      ctx.fillText('No notes played yet', w/2, h/2);
+      return;
+    }
+
+    var sRect = glyphCanvas.getBoundingClientRect();
+    var sw = sRect.width || 680, sh = sRect.height || 280;
+    var pad = 16;
+    var scaleX = (w - pad*2) / sw;
+    var scaleY = (h - pad*2) / sh;
+
+    function mapPt(hh){
+      return { x: pad + hh.x*scaleX, y: pad + hh.y*scaleY, tension: hh.tension||0, vowelKey: hh.vowelKey };
+    }
+
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    var inkCol = cssVar('--ink');
+    var lineCol = cssVar('--line');
+    var accentCol = cssVar('--accent');
+
+    // baseline + ticks — a quiet ruled field the traced line weaves across
+    ctx.save();
+    ctx.strokeStyle = lineCol;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad, h/2);
+    ctx.lineTo(w-pad, h/2);
+    ctx.stroke();
+    for(var tx = pad; tx <= w-pad; tx += 34){
+      ctx.beginPath();
+      ctx.moveTo(tx, h/2-3);
+      ctx.lineTo(tx, h/2+3);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    var pts = pts0.map(mapPt);
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for(var i=1;i<pts.length;i++){
+      var prev = pts[i-1], cur = pts[i];
+      var mx = (prev.x+cur.x)/2, my=(prev.y+cur.y)/2;
+      ctx.quadraticCurveTo(prev.x, prev.y, mx, my);
+    }
+    if(pts.length>1){ ctx.lineTo(pts[pts.length-1].x, pts[pts.length-1].y); }
+    ctx.strokeStyle = inkCol;
+    ctx.lineWidth = 1.2;
+    ctx.globalAlpha = 0.55;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // vertical playhead at the most recent note — echoes the reference's divider line
+    var lastPt = pts[pts.length-1];
+    ctx.save();
+    ctx.strokeStyle = accentCol;
+    ctx.globalAlpha = 0.5;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(lastPt.x, 6);
+    ctx.lineTo(lastPt.x, h-6);
+    ctx.stroke();
+    ctx.restore();
+
+    pts.forEach(function(pt, idx){
+      var isLast = idx === pts.length-1;
+      var r = (isLast?5:3) + pt.tension*2.5;
+      var col = isLast ? accentCol : inkCol;
+      drawMarker(ctx, pt.x, pt.y, r, pt.vowelKey, col, isLast?1:0.65);
+    });
+  }
+
+  // ---------- drawing: pitch/time piano-roll line ----------
+  function midiOf(note){
+    return Tone && Tone.Frequency ? Tone.Frequency(note).toMidi() : 60;
+  }
+
+  function drawPitch(){
+    var f = fitCanvas(pitchCanvas);
+    var ctx = f.ctx, w = f.w, h = f.h;
+    ctx.clearRect(0,0,w,h);
+
+    var accentCol = cssVar('--accent');
+    var inkCol = cssVar('--ink');
+    var pts0 = currentPoints();
+    var pad = 14;
+    var innerW = w - pad*2, innerH = h - pad*2;
+    var baseline = pad + innerH;
+
+    // rule ticks — the ruled magenta strip a piano-roll reference reads as
+    ctx.save();
+    ctx.strokeStyle = inkCol;
+    ctx.globalAlpha = 0.08;
+    ctx.lineWidth = 1;
+    for(var rx = pad; rx <= w-pad; rx += 18){
+      ctx.beginPath();
+      ctx.moveTo(rx, pad);
+      ctx.lineTo(rx, baseline);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    if(pts0.length === 0){
+      ctx.font = '11px "Space Grotesk",-apple-system,sans-serif';
+      ctx.fillStyle = accentCol;
+      ctx.globalAlpha = 0.7;
+      ctx.textAlign = 'center';
+      ctx.fillText('The pitch curve appears here', w/2, h/2);
+      ctx.globalAlpha = 1;
+      return;
+    }
+
+    var midis = pts0.map(function(hh){ return midiOf(hh.note); });
+    var minM = Math.min.apply(null, midis) - 2;
+    var maxM = Math.max.apply(null, midis) + 2;
+
+    function mapPt(idx){
+      var xx = pts0.length===1 ? pad + innerW/2 : pad + innerW*(idx/(pts0.length-1));
+      var t = (midis[idx]-minM)/Math.max(1,(maxM-minM));
+      var yy = pad + innerH*(1-t);
+      return {x:xx, y:yy, tension: pts0[idx].tension||0};
+    }
+
+    var pts = [];
+    for(var i=0;i<pts0.length;i++) pts.push(mapPt(i));
+
+    // faint contour beneath the bars, then a bar per note (height = pitch, width = tension)
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for(var j=1;j<pts.length;j++){
+      var prev = pts[j-1], cur = pts[j];
+      var mx=(prev.x+cur.x)/2, my=(prev.y+cur.y)/2;
+      ctx.quadraticCurveTo(prev.x, prev.y, mx, my);
+    }
+    if(pts.length>1) ctx.lineTo(pts[pts.length-1].x, pts[pts.length-1].y);
+    ctx.strokeStyle = inkCol;
+    ctx.globalAlpha = 0.22;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    pts.forEach(function(pt, idx){
+      var isLast = idx===pts.length-1;
+      var barW = (isLast?4.5:3) + pt.tension*2.5;
+      ctx.beginPath();
+      ctx.moveTo(pt.x, baseline);
+      ctx.lineTo(pt.x, pt.y);
+      ctx.strokeStyle = isLast ? accentCol : inkCol;
+      ctx.lineWidth = barW;
+      ctx.lineCap = 'round';
+      ctx.globalAlpha = isLast ? 1 : 0.72;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, isLast?3.6:2.2, 0, Math.PI*2);
+      ctx.fillStyle = isLast ? accentCol : inkCol;
+      ctx.fill();
+    });
+  }
+
+  // ---------- log: reference-style move list of what's been played ----------
+  function renderLog(){
+    var pts = currentPoints();
+    logCountEl.textContent = pts.length;
+    if(pts.length === 0){
+      logListEl.innerHTML = '<div class="log-empty">Your performance log appears here</div>';
+      return;
+    }
+    var rows = pts.map(function(p, idx){
+      var vLabel = (VOWELS[p.vowelKey]||{}).label || '';
+      var cls = (idx === pts.length-1) ? 'log-row latest' : 'log-row';
+      return '<div class="'+cls+'">' +
+        '<span class="log-idx">'+(idx+1)+'</span>' +
+        '<span class="log-char">'+(p.char||'')+'</span>' +
+        '<span class="log-note">'+p.note+'</span>' +
+        '<span class="log-vowel">'+vLabel+'</span>' +
+        '<span class="log-tension">'+Math.round((p.tension||0)*100)+'%</span>' +
+        '</div>';
+    });
+    logListEl.innerHTML = rows.slice().reverse().join('');
+  }
+
+  function refreshAll(){
+    drawGlyphBoard();
+    drawForm();
+    drawPitch();
+    renderLog();
+    updateNoteCount();
+  }
+
+  function updateNoteCount(){
+    var pts = currentPoints();
+    if(archiveViewData){
+      noteCountEl.textContent = 'Preview ' + pts.length + ' · Close';
+      noteCountEl.style.textDecoration = 'underline';
+      noteCountEl.style.cursor = 'pointer';
+    } else {
+      noteCountEl.textContent = pts.length + ' notes';
+      noteCountEl.style.textDecoration = 'none';
+      noteCountEl.style.cursor = 'default';
+    }
+  }
+  noteCountEl.addEventListener('click', function(){
+    if(!archiveViewData) return;
+    exitArchiveView();
+    lastNoteEl.textContent = 'Press and pull';
+    refreshAll();
+  });
+
+  // ---------- audio: live vowel-formant voice, driven by tension while held ----------
+  // no sample files (a published page can't load external audio) — a sawtooth source is
+  // pushed through three parallel bandpass filters tuned to a vowel's formants (F1/F2/F3).
+  // tension (0..1, from drag distance) raises volume, vibrato depth, formant sharpness
+  // (Q) and pitch together — the same "one continuous value drives the sound" shape a
+  // real sensor will eventually provide.
+  var voiceBus = null;
+
+  function ensureBus(){
+    if(!voiceBus){
+      var limiter = new Tone.Limiter(-3).toDestination();
+      var reverb = new Tone.Freeverb({ roomSize:0.65, dampening:3000 }).connect(limiter);
+      reverb.wet.value = 0.22;
+      voiceBus = reverb;
+    }
+    return voiceBus;
+  }
+
+  // This one function builds the entire signal path for "while one note sounds."
+  // Signal flow:
+  //   oscillator (raw tone, sawtooth) → 3 bandpass filters per vowel (formants)
+  //   → a gain that mixes each filter's output → envGain (this note's overall
+  //   volume, i.e. its "envelope") → voiceBus (shared reverb + limiter) → speakers
+  // update(tension) just resets the values along this path (volume/vibrato depth/
+  // filter Q/pitch) in real time, and release() fades the volume to 0, stops the
+  // oscillator, and disposes the nodes to free memory — Web Audio nodes have to be
+  // cleaned up by hand or they keep piling up.
+  function createLiveVoice(glyph){
+    var bus = ensureBus();
+    var vowel = VOWELS[glyph.vowelKey];
+    var baseFreq = Tone.Frequency(glyph.note).toFrequency();
+    var now = Tone.now();
+
+    var osc = new Tone.Oscillator(baseFreq, 'sawtooth');
+    // vibrato: connect an LFO (a very slow oscillator, 5.5Hz) to osc.detune so
+    // pitch wobbles very slightly. At amplitude 0 there's no wobble at all — the
+    // update() below raises this value based on tension.
+    var vib = new Tone.LFO(5.5, -25, 25);
+    vib.amplitude.value = 0;
+    vib.connect(osc.detune);
+    vib.start(now);
+
+    // envGain acts as this note's "envelope." It starts at 0 (silence) and
+    // ramps smoothly toward the target volume each time update() is called.
+    var envGain = new Tone.Gain(0).connect(bus);
+    var filters = [];
+    vowel.f.forEach(function(fHz, idx){
+      // one vowel = 3 bandpass filters (F1/F2/F3, the resonant frequencies of
+      // a human voice). Letting only these three bands through the oscillator's
+      // rich harmonics is what makes it sound like "a/e/i..." — the standard way
+      // to synthesize a vowel without samples.
+      var filt = new Tone.Filter(fHz, 'bandpass');
+      filt.Q.value = 6;
+      var g = new Tone.Gain(vowel.amp[idx] * 0.5);
+      osc.connect(filt);
+      filt.connect(g);
+      g.connect(envGain);
+      filters.push(filt);
+    });
+    osc.start(now);
+
+    var disposed = false;
+
+    // a single tension value (0–1) drives volume, vibrato depth, filter
+    // resonance (Q), and pitch all at once. If you connect a real sensor
+    // later, just feed its normalized (0–1) reading in here instead of the
+    // drag distance.
+    function update(tension){
+      if(disposed) return;
+      tension = Math.max(0, Math.min(1, tension));
+      envGain.gain.rampTo(0.2 + tension*0.65, 0.05);
+      vib.amplitude.rampTo(tension, 0.08);
+      osc.frequency.rampTo(baseFreq * (1 + tension*0.12), 0.05);
+      filters.forEach(function(f){ f.Q.rampTo(6 + tension*11, 0.05); });
+    }
+
+    function release(){
+      if(disposed) return;
+      disposed = true;
+      var t = Tone.now();
+      envGain.gain.cancelScheduledValues(t);
+      envGain.gain.setValueAtTime(Math.max(0.0001, envGain.gain.value), t);
+      envGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+      osc.stop(t + 0.4);
+      vib.stop(t + 0.4);
+      setTimeout(function(){
+        [osc, vib, envGain].concat(filters).forEach(function(nd){ try{ nd.dispose(); }catch(e){} });
+      }, 550);
+    }
+
+    update(0.15); // a bare tap still sounds, before any drag distance accrues
+    return { update:update, release:release };
+  }
+
+  function releaseAllVoices(){
+    Object.keys(activeDrags).forEach(function(pid){
+      try{ activeDrags[pid].voice.release(); }catch(e){}
+    });
+    activeDrags = {};
+    dragVisual = {};
+  }
+
+  // ---------- interaction: press-and-drag = tension ----------
+  // Three pointer events work together as a set:
+  //   pointerdown — if a glyph was touched, start the sound (createLiveVoice)
+  //                 and record which glyph is being held in activeDrags
+  //   pointermove — turn the distance dragged from the start point into
+  //                 tension (0–1), call voice.update(tension), and update the
+  //                 on-screen display position too
+  //   pointerup   — finish the sound with voice.release(), record this note
+  //                 into history (= writing one note onto the score), and
+  //                 only then call refreshAll() to redraw the panels above/below
+  // In other words, the sound updates live every frame between down and up,
+  // but the "forming line" and "performance log" update only once, the moment
+  // you let go — otherwise redrawing constantly during the drag would stutter.
+  //
+  // setPointerCapture: without this, the moment your finger/mouse leaves the
+  // canvas you'd stop receiving move/up events (dragging out past the canvas
+  // edge while still pressed is common, so this is essential).
+  function pointFromEvent(e, canvas){
+    var rect = canvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+
+  function findNearestGlyph(pt, maxD){
+    var best = null, bestD = maxD;
+    glyphs.forEach(function(g){
+      var d = Math.hypot(g.x-pt.x, g.y-pt.y);
+      if(d < bestD){ bestD = d; best = g; }
+    });
+    return best;
+  }
+
+  glyphCanvas.addEventListener('pointerdown', function(e){
+    var pt = pointFromEvent(e, glyphCanvas);
+    var glyph = findNearestGlyph(pt, 26);
+    if(!glyph) return;
+    e.preventDefault();
+    if(archiveViewData){ exitArchiveView(); }
+    try{ glyphCanvas.setPointerCapture(e.pointerId); }catch(err){}
+    var voice = createLiveVoice(glyph);
+    activeDrags[e.pointerId] = { glyph:glyph, voice:voice, startX:pt.x, startY:pt.y, maxTension:0.15 };
+    dragVisual[glyph.id] = { x:glyph.x, y:glyph.y };
+    lastNoteEl.textContent = glyph.char + ' ' + glyph.note + ' · ' + VOWELS[glyph.vowelKey].label + ' · holding';
+    drawGlyphBoard();
+  });
+
+  glyphCanvas.addEventListener('pointermove', function(e){
+    var drag = activeDrags[e.pointerId];
+    if(!drag) return;
+    var pt = pointFromEvent(e, glyphCanvas);
+    var dist = Math.hypot(pt.x-drag.startX, pt.y-drag.startY);
+    var tension = Math.max(0, Math.min(1, dist/70));
+    drag.maxTension = Math.max(drag.maxTension, tension);
+    drag.voice.update(tension);
+
+    var maxDisp = 28;
+    var ang = Math.atan2(pt.y-drag.startY, pt.x-drag.startX);
+    var disp = Math.min(maxDisp, dist*0.4);
+    dragVisual[drag.glyph.id] = { x: drag.startX + Math.cos(ang)*disp, y: drag.startY + Math.sin(ang)*disp };
+
+    lastNoteEl.textContent = drag.glyph.char + ' ' + drag.glyph.note + ' · ' + VOWELS[drag.glyph.vowelKey].label + ' · tension ' + Math.round(tension*100) + '%';
+    drawGlyphBoard();
+  });
+
+  function endDrag(e){
+    var drag = activeDrags[e.pointerId];
+    if(!drag) return;
+    drag.voice.release();
+    delete dragVisual[drag.glyph.id];
+    delete activeDrags[e.pointerId];
+
+    history.push({ x:drag.glyph.x, y:drag.glyph.y, note:drag.glyph.note, vowelKey:drag.glyph.vowelKey, char:drag.glyph.char, tension:drag.maxTension, t:Date.now() });
+    lastNoteEl.textContent = drag.glyph.char + ' ' + drag.glyph.note + ' · ' + VOWELS[drag.glyph.vowelKey].label + ' · tension ' + Math.round(drag.maxTension*100) + '%';
+    refreshAll();
+  }
+  glyphCanvas.addEventListener('pointerup', endDrag);
+  glyphCanvas.addEventListener('pointercancel', endDrag);
+
+  document.getElementById('clearBtn').addEventListener('click', function(){
+    exitArchiveView();
+    history = [];
+    lastNoteEl.textContent = 'Press and pull';
+    refreshAll();
+  });
+
+  document.getElementById('shuffleBtn').addEventListener('click', function(){
+    shuffleBoard();
+  });
+
+  var autoBtn = document.getElementById('autoBtn');
+  function stopAuto(){
+    if(autoTimer){ clearInterval(autoTimer); autoTimer = null; autoBtn.textContent = 'Auto Play'; }
+  }
+  autoBtn.addEventListener('click', function(){
+    if(autoTimer){ stopAuto(); return; }
+    exitArchiveView();
+    var seq = glyphs.slice().sort(function(a,b){ return a.x - b.x || a.y - b.y; });
+    var i = 0;
+    autoBtn.textContent = 'Stop';
+    autoTimer = setInterval(function(){
+      if(i >= seq.length){ stopAuto(); return; }
+      var glyph = seq[i];
+      var voice = createLiveVoice(glyph);
+      var tension = 0.55;
+      voice.update(tension);
+      dragVisual[glyph.id] = { x: glyph.x + (Math.random()*8-4), y: glyph.y + (Math.random()*8-4) };
+      lastNoteEl.textContent = glyph.char + ' ' + glyph.note + ' · ' + VOWELS[glyph.vowelKey].label + ' · auto';
+      drawGlyphBoard();
+      (function(gl, vc, ts){
+        setTimeout(function(){
+          vc.release();
+          delete dragVisual[gl.id];
+          history.push({ x:gl.x, y:gl.y, note:gl.note, vowelKey:gl.vowelKey, char:gl.char, tension:ts, t:Date.now() });
+          refreshAll();
+        }, 260);
+      })(glyph, voice, tension);
+      i++;
+    }, 380);
+  });
+
+  // ---------- start overlay (unlock audio) ----------
+  document.getElementById('startBtn').addEventListener('click', function(){
+    Tone.start().then(function(){
+      document.getElementById('startOverlay').style.display = 'none';
+    });
+  });
+
+  // ---------- resize ----------
+  var resizeTimer;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function(){
+      refreshAll();
+    }, 80);
+  });
+
+  // ---------- archive: db (saved traces) + downloads (export json) ----------
+  // Everything from here to the end is a Claude-artifact-only feature
+  // (window.claude only exists as a bridge in that environment). On a
+  // self-hosted page window.claude doesn't exist at all, so
+  // initCapabilities() quietly does nothing, and the save/archive buttons
+  // stay hidden the whole time because of the CSS [hidden] rule — no errors.
+  // If you don't need this feature, you can delete this whole block (down
+  // to the initCapabilities() call at the bottom) and everything else still
+  // works.
+  var dbNS = null, downloadsNS = null;
+
+  function traceSvg(points){
+    if(!points || points.length===0) return '';
+    var w=92, h=64, pad=6;
+    var path = points.map(function(p, i){
+      var x = pad + p.xn*(w-pad*2);
+      var y = pad + p.yn*(h-pad*2);
+      return (i===0?'M':'L') + x.toFixed(1) + ',' + y.toFixed(1);
+    }).join(' ');
+    return '<svg viewBox="0 0 '+w+' '+h+'" width="'+w+'" height="'+h+'" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="'+path+'" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/></svg>';
+  }
+
+  function relTime(iso){
+    var d = new Date(iso).getTime();
+    if(isNaN(d)) return '';
+    var diff = Math.max(0, Date.now()-d);
+    var m = Math.floor(diff/60000);
+    if(m<1) return 'just now';
+    if(m<60) return m+'m ago';
+    var hr = Math.floor(m/60);
+    if(hr<24) return hr+'h ago';
+    return Math.floor(hr/24)+'d ago';
+  }
+
+  function renderArchiveList(docs){
+    archiveCountEl.textContent = docs.length;
+    if(docs.length===0){
+      archiveListEl.innerHTML = '<div class="archive-empty">No saved traces yet. Play something, then click "Save."</div>';
+      return;
+    }
+    archiveListEl.innerHTML = '';
+    docs.forEach(function(doc){
+      var data = doc.data() || {};
+      var points = data.points || [];
+
+      var card = document.createElement('div');
+      card.className = 'archive-card';
+
+      var thumb = document.createElement('div');
+      thumb.className = 'archive-thumb';
+      thumb.innerHTML = traceSvg(points);
+      thumb.addEventListener('click', function(){
+        archiveViewData = { id:doc.id, points:points };
+        lastNoteEl.textContent = 'Viewing archive · click a glyph to return to your current session';
+        refreshAll();
+      });
+
+      var meta = document.createElement('div');
+      meta.className = 'archive-meta';
+      var label = document.createElement('span');
+      label.textContent = (data.count||points.length) + ' notes · ' + relTime(data.createdAt);
+      var delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.textContent = 'Delete';
+      delBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        if(dbNS){ dbNS.collection('traces').doc(doc.id)['delete']().catch(function(){}); }
+      });
+      meta.appendChild(label);
+      meta.appendChild(delBtn);
+
+      card.appendChild(thumb);
+      card.appendChild(meta);
+      archiveListEl.appendChild(card);
+    });
+  }
+
+  function pointsFromHistory(list){
+    var rect = glyphCanvas.getBoundingClientRect();
+    var w = rect.width || 680, h = rect.height || 280, margin = BOARD_MARGIN;
+    return list.map(function(hh){
+      return {
+        xn:(hh.x-margin)/(w-margin*2), yn:(hh.y-margin)/(h-margin*2),
+        note:hh.note, vowelKey:hh.vowelKey, tension:hh.tension||0, char:hh.char||''
+      };
+    });
+  }
+
+  function flashMessage(msg){
+    var prev = lastNoteEl.textContent;
+    lastNoteEl.textContent = msg;
+    setTimeout(function(){ if(lastNoteEl.textContent===msg) lastNoteEl.textContent = prev; }, 1500);
+  }
+
+  saveBtn.addEventListener('click', function(){
+    if(!dbNS || history.length===0){
+      if(history.length===0) flashMessage('Nothing to save yet');
+      return;
+    }
+    var body = {
+      createdAt: new Date().toISOString(),
+      count: history.length,
+      boardOrder: glyphs.map(function(g){ return g.char; }),
+      points: pointsFromHistory(history)
+    };
+    saveBtn.disabled = true;
+    dbNS.collection('traces').add(body).then(function(){
+      flashMessage('Saved · ' + history.length + ' notes');
+      saveBtn.disabled = false;
+    }).catch(function(err){
+      flashMessage('Save failed (' + ((err&&err.code)||'error') + ')');
+      saveBtn.disabled = false;
+    });
+  });
+
+  exportBtn.addEventListener('click', function(){
+    if(!downloadsNS) return;
+    var pts = archiveViewData ? archiveViewData.points : pointsFromHistory(history);
+    if(!pts || pts.length===0){ flashMessage('Nothing to export'); return; }
+    var payload = { exportedAt: new Date().toISOString(), count: pts.length, points: pts };
+    downloadsNS.save({
+      filename: 'typo-score-trace-' + Date.now() + '.json',
+      data: JSON.stringify(payload, null, 2)
+    }).catch(function(){ /* declined or unavailable — no-op */ });
+  });
+
+  function initCapabilities(){
+    if(!(window.claude && window.claude.use)) return;
+    window.claude.use('db').then(function(ns){
+      dbNS = ns;
+      if(ns){
+        archivePanel.hidden = false;
+        saveBtn.hidden = false;
+        try{
+          dbNS.collection('traces').orderBy('createdAt','desc').limit(24).onSnapshot(function(snap){
+            renderArchiveList(snap.docs);
+          }, function(err){ console.warn('archive subscribe error', err); });
+        }catch(e){ console.warn(e); }
+      }
+    });
+    window.claude.use('downloads').then(function(ns){
+      downloadsNS = ns;
+      exportBtn.hidden = !ns;
+    });
+  }
+  initCapabilities();
+
+  // init
+  loadBoard(BOARD_SPEC.map(function(s){ return s.char; }));
+})();
+</script>
